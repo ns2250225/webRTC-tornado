@@ -10,9 +10,10 @@
 # 启动
 - 准备摄像头
 - 执行 python signaling_server.py
-- 一个浏览器中打开client.html，点击start video
-- 另一个浏览器中打开client.html，点击start video
-- 点击connect，同步两边视频
+- 一个浏览器中打开client.html，点击Start Local Video
+- 另一个浏览器中打开client.html，点击Start Local Video
+- 点击Sync Remote，同步两边视频
+- 输入信息，点击Send Message发送
 
 ---
 # 效果预览
