@@ -2,29 +2,75 @@
 <html>
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <title>WebRTC Demo</title>
+    <title>WebRTC Chat Demo</title>
+
+    <!-- Bootstrap4 CSS -->
+    <link rel="stylesheet" href="./static/css/bootstrap.min.css">
+    <!-- Client CSS -->
+    <link rel="stylesheet" href="./static/css/client.css">
+
 </head>
 
 <body>
-WebRTC Demo<br />
-<button type="button" onclick="startVideo();">Start Video</button>
-<button type="button" onclick="stopVideo();">Stop Video</button>
-&nbsp;
-<button type="button" onclick="connect();">Connect</button>
-<button type="button" onclick="hangUp();">Hang Up</button>
-<div>
-    <video id="local_video" autoplay style="width: 160px; height: 120px; border: 1px solid black;"></video>
-    <video id="remote_video" autoplay style="width: 160px; height: 120px; border: 1px solid black;"></video>
+<div class="description">
+    <h1>WebRTC Chat Demo</h1> 
 </div>
-<p>SDP to send:<br />
-    <textarea id="text_for_send_sdp" rows="5" cols="60" readonly="readonly">SDP to send</textarea>
-</p>
-<p>SDP to receive:&nbsp;
-    <button type="button" onclick="onSdpText();">Receive remote SDP</button><br />
-    <textarea id="text_for_receive_sdp" rows="5" cols="60"></textarea>
-</p>
 
-<script type='text/javascript' src='./webrtc.js'></script>
+<br />
+
+<div class="container">
+    <div class="row">
+        <div class="col-sm">
+            <h2>Local Video</h2>
+        </div>
+        <div class="col-sm">
+            <h2>Remote Video</h2>
+        </div>
+        <div class="col-sm">
+            <h2>Chat Messages</h2>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm">
+            <video id="local_video" autoplay ></video>
+        </div>
+        <div class="col-sm">
+            <video id="remote_video" autoplay ></video>
+        </div>
+        <div class="col-sm">
+            <textarea id="chat_messages" readonly></textarea>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm">
+            <button type="button" class="btn btn-info" onclick="startVideo();">Start Local Video</button>
+        </div>
+        <div class="col-sm">
+            <button type="button" class="btn btn-danger" onclick="stopVideo();">Stop Local Video</button>
+        </div>
+        <div class="col-sm">
+            <button type="button" class="btn btn-info" onclick="connect();">Sync Remote</button>
+        </div>
+        <div class="col-sm">
+            <button type="button" class="btn btn-danger" onclick="hangUp();">Hang Up</button>
+        </div>
+    </div>
+    <div class="row">   
+        <input id="chat_messages_input" class="chat_messages_input" type="text" placeholder="Please input chat messages...">     
+    </div>
+    <div class="row">   
+        <button type="button" id="sendBtn" class="btn btn-dark" onclick="sendMsg();">Send Message</button>     
+    </div>
+</div>
+
+
+<!-- Bootstrap JS -->
+<script type='text/javascript' src='./static/js/jquery-3.2.1.slim.min.js'></script>
+<script type='text/javascript' src='./static/js/popper.min.js'></script>
+<script type='text/javascript' src='./static/js/bootstrap.min.js'></script>
+
+<!-- Main JS -->
+<script type='text/javascript' src='./static/js/webrtc.js'></script>
 
 
 </body>

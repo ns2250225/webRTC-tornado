@@ -1,9 +1,11 @@
 const localVideo = document.getElementById('local_video');
 const remoteVideo = document.getElementById('remote_video');
-const textForSendSdp = document.getElementById('text_for_send_sdp');
-const textToReceiveSdp = document.getElementById('text_for_receive_sdp');
+const chatMsgArea = document.getElementById('chat_messages');
+const chatMsgInput = document.getElementById('chat_messages_input');
 let localStream = null;
 let peerConnection = null;
+let dataChannel = null;
+let receiveChannel = null;
 
 // 设置websocket服务器地址
 const wsUrl = 'ws://localhost:8000/';
@@ -22,14 +24,12 @@ ws.onmessage = function(evt) {
     if (message.type === 'offer') {
         // 收到 offer 时
         console.log('Received offer ...');
-        textToReceiveSdp.value = message.sdp;
         const offer = new RTCSessionDescription(message);
         setOffer(offer);
     }
     else if (message.type === 'answer') {
         // 收到 answer 时
         console.log('Received answer ...');
-        textToReceiveSdp.value = message.sdp;
         const answer = new RTCSessionDescription(message);
         setAnswer(answer);
     }
@@ -84,6 +84,31 @@ function playVideo(element, stream) {
     element.play();
 }
 
+// Video 暂停
+function stopVideo() {
+    cleanupVideoElement(localVideo);
+}
+
+
+// dataChannel 接收回调
+function receiveChannelCallback(event) {
+    console.log('Receive Channel Callback');
+    receiveChannel = event.channel;
+    receiveChannel.onmessage = onReceiveMessageCallback;
+    receiveChannel.onopen = onReceiveChannelStateChange;
+    receiveChannel.onclose = onReceiveChannelStateChange;
+}
+
+function onReceiveMessageCallback(event) {
+    console.log(event.data)
+    chatMsgArea.append(event.data + '\n');
+}
+
+function onReceiveChannelStateChange() {
+    console.log("open connection...")
+}
+
+
 // WebRTC 连接
 function prepareNewConnection() {
     // RTCPeerConnection 初始化
@@ -102,6 +127,11 @@ function prepareNewConnection() {
             playVideo(remoteVideo, event.stream);
         };
     }
+
+    // 建立 data channels 连接
+    dataChannel = peer.createDataChannel("chat", {ordered: false, maxRetransmitTime: 3000});
+    // 建立 data channels 的回调
+    peer.ondatachannel = receiveChannelCallback;
 
     // 收到 ICE Candidate 信息时
     peer.onicecandidate = function (evt) {
@@ -146,11 +176,6 @@ function prepareNewConnection() {
 // 手动发送sdp消息
 function sendSdp(sessionDescription) {
     console.log('---sending sdp ---');
-    textForSendSdp.value = sessionDescription.sdp;
-    /*---
-     textForSendSdp.focus();
-     textForSendSdp.select();
-     ----*/
     const message = JSON.stringify(sessionDescription);
     console.log('sending SDP=' + message);
     ws.send(message);
@@ -164,6 +189,17 @@ function connect() {
     }
     else {
         console.warn('peer already exist.');
+    }
+}
+
+// 点击 sendMsg 的处理函数
+function sendMsg() {
+    if (dataChannel) {
+        const msg = chatMsgInput.value;
+        console.log(msg)
+        dataChannel.send(msg);
+        chatMsgArea.append('me: ' + msg + '\n');
+        chatMsgInput.value = '';
     }
 }
 
@@ -201,30 +237,6 @@ function makeAnswer() {
     }).catch(function(err) {
         console.error(err);
     });
-}
-
-// 判断sdp信息的来源
-function onSdpText() {
-    const text = textToReceiveSdp.value;
-    if (peerConnection) {
-        // Offer方收到Anser的时候
-        console.log('Received answer text...');
-        const answer = new RTCSessionDescription({
-            type : 'answer',
-            sdp : text,
-        });
-        setAnswer(answer);
-    }
-    else {
-        // Offer方收到Offer場合
-        console.log('Received offer text...');
-        const offer = new RTCSessionDescription({
-            type : 'offer',
-            sdp : text,
-        });
-        setOffer(offer);
-    }
-    textToReceiveSdp.value ='';
 }
 
 // Offer方处理SDP方法
@@ -268,8 +280,6 @@ function hangUp(){
             console.log('sending close message');
             ws.send(message);
             cleanupVideoElement(remoteVideo);
-            textForSendSdp.value = '';
-            textToReceiveSdp.value = '';
             return;
         }
     }
